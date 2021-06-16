@@ -73,10 +73,11 @@ def save_to_matlab_array():
 
 
 def corr_by_con(df, keep):
-    y = np.zeros((len(keep), 4, 30), dtype=int)
+    sns.set_palette('Set2')
+    y = np.zeros((len(keep), 4, 60), dtype=int)
     for i, sub in enumerate(keep):
         for j, con in enumerate(range(1, 5)):
-            y[i, j, :] = df[  # (df['session'] == sess)
+            y[i, j, :] = df[
                 (df['con'] == con)
                 & (df['prolificID'] == sub)
                 ].sort_values('t')['corr']
@@ -88,7 +89,7 @@ def corr_by_con(df, keep):
         sns.lineplot(
             x='t', y='corr',
             label=f'Condition {i + 1}',
-            data=dd, ci='sem', color=f'C{i}')
+            data=dd, ci=68, color=f'C{i}')
         plt.ylim([0, 1])
         plt.show()
 
@@ -109,12 +110,17 @@ def main():
     print(f'N={n}')
 
     df = df[df['prolificID'].isin(keep)]
-    # df['t'] = df['session'] * (df['t']+1)
+    df['t'] = (df['t']+(120*df['session']-1))
+
+    corr_by_con(df, keep)
+
+    return
     fig, ax = plt.subplots(2, 3)
     patches = [matplotlib.patches.Patch(color=sns.color_palette()[i], label=t) for i, t in
                enumerate(['partial', 'complete', 'partial', 'complete'])]
     ax[0, 0].legend(handles=patches, loc='upper left')
 
+    sns.set_palette(np.array(sns.color_palette('Paired'))[[0, 1, 4, 5]])
     for sess in (1, 2):
         df_sess = df[df['session']==sess]
 
